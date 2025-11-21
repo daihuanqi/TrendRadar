@@ -1006,8 +1006,8 @@ def format_rank_display(ranks: List[int], rank_threshold: int, format_type: str)
         highlight_start = "<font color='red'><strong>"
         highlight_end = "</strong></font>"
     elif format_type == "feishu":
-        highlight_start = ""
-        highlight_end = ""
+        highlight_start = "<font color='red'>**"
+        highlight_end = "**</font>"
     elif format_type == "dingtalk":
         highlight_start = "**"
         highlight_end = "**"
@@ -1455,23 +1455,23 @@ def format_title_for_platform(
 
     if platform == "feishu":
         if link_url:
-            formatted_title = f"{cleaned_title} ({link_url})"
+            formatted_title = f"[{cleaned_title}]({link_url})"
         else:
             formatted_title = cleaned_title
 
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"[{title_data['source_name']}] {title_prefix}{formatted_title}"
+            result = f"<font color='grey'>[{title_data['source_name']}]</font> {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
         if rank_display:
             result += f" {rank_display}"
         if title_data["time_display"]:
-            result += f" - {title_data['time_display']}"
+            result += f" <font color='grey'>- {title_data['time_display']}</font>"
         if title_data["count"] > 1:
-            result += f" ({title_data['count']}次)"
+            result += f" <font color='green'>({title_data['count']}次)</font>"
 
         return result
 
@@ -2654,7 +2654,7 @@ def render_feishu_content(
     text_content = ""
 
     if report_data["stats"]:
-        text_content += f"📊 热点词汇统计\n\n"
+        text_content += f"📊 **热点词汇统计**\n\n"
 
     total_count = len(report_data["stats"])
 
@@ -2662,14 +2662,14 @@ def render_feishu_content(
         word = stat["word"]
         count = stat["count"]
 
-        sequence_display = f"[{i + 1}/{total_count}]"
+        sequence_display = f"<font color='grey'>[{i + 1}/{total_count}]</font>"
 
         if count >= 10:
-            text_content += f"🔥 {sequence_display} {word} : {count} 条\n\n"
+            text_content += f"🔥 {sequence_display} **{word}** : <font color='red'>{count}</font> 条\n\n"
         elif count >= 5:
-            text_content += f"📈 {sequence_display} {word} : {count} 条\n\n"
+            text_content += f"📈 {sequence_display} **{word}** : <font color='orange'>{count}</font> 条\n\n"
         else:
-            text_content += f"📌 {sequence_display} {word} : {count} 条\n\n"
+            text_content += f"📌 {sequence_display} **{word}** : {count} 条\n\n"
 
         for j, title_data in enumerate(stat["titles"], 1):
             formatted_title = format_title_for_platform(
@@ -2697,12 +2697,12 @@ def render_feishu_content(
             text_content += f"\n{CONFIG['FEISHU_MESSAGE_SEPARATOR']}\n\n"
 
         text_content += (
-            f"🆕 本次新增热点新闻 (共 {report_data['total_new_count']} 条)\n\n"
+            f"🆕 **本次新增热点新闻** (共 {report_data['total_new_count']} 条)\n\n"
         )
 
         for source_data in report_data["new_titles"]:
             text_content += (
-                f"{source_data['source_name']} ({len(source_data['titles'])} 条):\n"
+                f"**{source_data['source_name']}** ({len(source_data['titles'])} 条):\n"
             )
 
             for j, title_data in enumerate(source_data["titles"], 1):
@@ -2719,17 +2719,17 @@ def render_feishu_content(
         if text_content and "暂无匹配" not in text_content:
             text_content += f"\n{CONFIG['FEISHU_MESSAGE_SEPARATOR']}\n\n"
 
-        text_content += "⚠️ 数据获取失败的平台：\n\n"
+        text_content += "⚠️ **数据获取失败的平台：**\n\n"
         for i, id_value in enumerate(report_data["failed_ids"], 1):
-            text_content += f"  • {id_value}\n"
+            text_content += f"  • <font color='red'>{id_value}</font>\n"
 
     now = get_beijing_time()
     text_content += (
-        f"\n\n更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
+        f"\n\n<font color='grey'>更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}</font>"
     )
 
     if update_info:
-        text_content += f"\nTrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}"
+        text_content += f"\n<font color='grey'>TrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}</font>"
 
     return text_content
 
@@ -2881,9 +2881,9 @@ def split_content_into_batches(
         if update_info:
             base_footer += f"\n> TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
     elif format_type == "feishu":
-        base_footer = f"\n\n更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
+        base_footer = f"\n\n<font color='grey'>更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}</font>"
         if update_info:
-            base_footer += f"\nTrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}"
+            base_footer += f"\n<font color='grey'>TrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}</font>"
     elif format_type == "dingtalk":
         base_footer = f"\n\n> 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
         if update_info:
@@ -2898,7 +2898,7 @@ def split_content_into_batches(
         elif format_type == "ntfy":
             stats_header = f"📊 **热点词汇统计**\n\n"
         elif format_type == "feishu":
-            stats_header = f"📊 热点词汇统计\n\n"
+            stats_header = f"📊 **热点词汇统计**\n\n"
         elif format_type == "dingtalk":
             stats_header = f"📊 **热点词汇统计**\n\n"
 
@@ -2978,11 +2978,11 @@ def split_content_into_batches(
                     word_header = f"📌 {sequence_display} **{word}** : {count} 条\n\n"
             elif format_type == "feishu":
                 if count >= 10:
-                    word_header = f"🔥 {sequence_display} {word} : {count} 条\n\n"
+                    word_header = f"🔥 <font color='grey'>{sequence_display}</font> **{word}** : <font color='red'>{count}</font> 条\n\n"
                 elif count >= 5:
-                    word_header = f"📈 {sequence_display} {word} : {count} 条\n\n"
+                    word_header = f"📈 <font color='grey'>{sequence_display}</font> **{word}** : <font color='orange'>{count}</font> 条\n\n"
                 else:
-                    word_header = f"📌 {sequence_display} {word} : {count} 条\n\n"
+                    word_header = f"📌 <font color='grey'>{sequence_display}</font> **{word}** : {count} 条\n\n"
             elif format_type == "dingtalk":
                 if count >= 10:
                     word_header = (
@@ -3121,7 +3121,7 @@ def split_content_into_batches(
         elif format_type == "ntfy":
             new_header = f"\n\n🆕 **本次新增热点新闻** (共 {report_data['total_new_count']} 条)\n\n"
         elif format_type == "feishu":
-            new_header = f"\n{CONFIG['FEISHU_MESSAGE_SEPARATOR']}\n\n🆕 本次新增热点新闻 (共 {report_data['total_new_count']} 条)\n\n"
+            new_header = f"\n{CONFIG['FEISHU_MESSAGE_SEPARATOR']}\n\n🆕 **本次新增热点新闻** (共 {report_data['total_new_count']} 条)\n\n"
         elif format_type == "dingtalk":
             new_header = f"\n---\n\n🆕 **本次新增热点新闻** (共 {report_data['total_new_count']} 条)\n\n"
 
@@ -3148,7 +3148,7 @@ def split_content_into_batches(
             elif format_type == "ntfy":
                 source_header = f"**{source_data['source_name']}** ({len(source_data['titles'])} 条):\n\n"
             elif format_type == "feishu":
-                source_header = f"{source_data['source_name']} ({len(source_data['titles'])} 条):\n\n"
+                source_header = f"**{source_data['source_name']}** ({len(source_data['titles'])} 条):\n\n"
             elif format_type == "dingtalk":
                 source_header = f"**{source_data['source_name']}** ({len(source_data['titles'])} 条):\n\n"
 
@@ -3249,7 +3249,7 @@ def split_content_into_batches(
         elif format_type == "ntfy":
             failed_header = f"\n\n⚠️ **数据获取失败的平台：**\n\n"
         elif format_type == "feishu":
-            failed_header = f"\n{CONFIG['FEISHU_MESSAGE_SEPARATOR']}\n\n⚠️ 数据获取失败的平台：\n\n"
+            failed_header = f"\n{CONFIG['FEISHU_MESSAGE_SEPARATOR']}\n\n⚠️ **数据获取失败的平台：**\n\n"
         elif format_type == "dingtalk":
             failed_header = f"\n---\n\n⚠️ **数据获取失败的平台：**\n\n"
 
@@ -3268,7 +3268,7 @@ def split_content_into_batches(
 
         for i, id_value in enumerate(report_data["failed_ids"], 1):
             if format_type == "feishu":
-                failed_line = f"  • {id_value}\n"
+                failed_line = f"  • <font color='red'>{id_value}</font>\n"
             elif format_type == "dingtalk":
                 failed_line = f"  • **{id_value}**\n"
             else:
@@ -3449,11 +3449,11 @@ def send_to_feishu(
 
         # 添加批次标识
         if len(batches) > 1:
-            batch_header = f"[第 {i}/{len(batches)} 批次]\n\n"
+            batch_header = f"**[第 {i}/{len(batches)} 批次]**\n\n"
             # 将批次标识插入到适当位置（在统计标题之后）
-            if "📊 热点词汇统计" in batch_content:
+            if "📊 **热点词汇统计**" in batch_content:
                 batch_content = batch_content.replace(
-                    "📊 热点词汇统计\n\n", f"📊 热点词汇统计 {batch_header}"
+                    "📊 **热点词汇统计**\n\n", f"📊 **热点词汇统计** {batch_header}"
                 )
             else:
                 # 如果没有统计标题，直接在开头添加
